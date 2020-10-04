@@ -36,7 +36,6 @@ parser.add_argument('--save_model', type=str, help='save model?', default="False
 parser.add_argument('--save_result', type=str, help='save result?', default="True")
 
 
-
 args = parser.parse_args()
 
 # Seed
