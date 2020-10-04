@@ -7,9 +7,7 @@ from data.mnist import MNIST
 import argparse, sys
 import datetime
 from algorithm.jocor import JoCoR
-
-
-
+from monitor import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type=float, default=0.001)
@@ -35,15 +33,17 @@ parser.add_argument('--model_type', type=str, help='[mlp,cnn]', default='cnn')
 parser.add_argument('--save_model', type=str, help='save model?', default="False")
 parser.add_argument('--save_result', type=str, help='save result?', default="True")
 
-
 args = parser.parse_args()
 
 # Seed
 torch.manual_seed(args.seed)
+mt = Monitor()
+pgu_list = mt.detecting()
+if pgu_list is not None:
+    args.gpu = pgu_list[0]
 if args.gpu is not None:
     device = torch.device('cuda:{}'.format(args.gpu))
     torch.cuda.manual_seed(args.seed)
-
 else:
     device = torch.device('cpu')
     torch.manual_seed(args.seed)
@@ -110,7 +110,6 @@ if args.dataset == 'cifar100':
     filter_outlier = False
     args.model_type = "cnn"
 
-
     train_dataset = CIFAR100(root='./data/',
                              download=True,
                              train=True,
@@ -131,7 +130,6 @@ if args.forget_rate is None:
     forget_rate = args.noise_rate
 else:
     forget_rate = args.forget_rate
-
 
 
 def main():
@@ -164,7 +162,6 @@ def main():
         'Epoch [%d/%d] Test Accuracy on the %s test images: Model1 %.4f %% Model2 %.4f ' % (
             epoch + 1, args.n_epoch, len(test_dataset), test_acc1, test_acc2))
 
-
     acc_list = []
     # training
     for epoch in range(1, args.n_epoch):
@@ -188,11 +185,10 @@ def main():
                     epoch + 1, args.n_epoch, len(test_dataset), test_acc1, test_acc2, mean_pure_ratio1,
                     mean_pure_ratio2))
 
-
         if epoch >= 190:
             acc_list.extend([test_acc1, test_acc2])
 
-    avg_acc = sum(acc_list)/len(acc_list)
+    avg_acc = sum(acc_list) / len(acc_list)
     print(len(acc_list))
     print("the average acc in last 10 epochs: {}".format(str(avg_acc)))
 
